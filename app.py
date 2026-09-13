@@ -1,20 +1,25 @@
 import os
+import json
 from flask import Flask, jsonify, render_template, request
 
 app = Flask(__name__)
 
 
-def demo_plan(topic: str, days: int):
+def demo_plan(topic: str, days: int, minutes: int = 90, confidence: str = "Not sure"):
+    intensity = "light" if minutes < 60 else "focused" if minutes < 120 else "deep"
     return {
-        "title": f"{topic} — {days}-day study plan",
+        "title": f"Your {days}-day plan for {topic}",
         "mode": "Demo mode",
+        "coach": f"You have {minutes} minutes per day, so this plan keeps each session {intensity} and realistic.",
         "items": [
-            {"day": 1, "title": "Understand the basics", "tasks": ["Read the core concepts", "Write 5 key points", "Do a 10-minute recall"]},
-            {"day": 2, "title": "Practice", "tasks": ["Review yesterday's notes", "Solve practice questions", "Mark difficult areas"]},
-            {"day": 3, "title": "Active recall", "tasks": ["Test yourself without notes", "Explain the topic in simple words", "Fix knowledge gaps"]},
-            {"day": 4, "title": "Revision", "tasks": ["Review key formulas/facts", "Complete a short quiz", "Create a one-page summary"]},
-            {"day": 5, "title": "Final check", "tasks": ["Take a timed practice test", "Review mistakes", "Plan the next revision"]},
-        ][:max(1, min(days, 5))]
+            {"day": 1, "title": "Understand before memorising", "tasks": ["Identify the 3 most important ideas", "Study one concept in a focused block", "Close your notes and recall what you learned"]},
+            {"day": 2, "title": "Practice the weak spots", "tasks": ["Review yesterday's recall", "Solve 5–10 questions", "Write down every mistake or doubt"]},
+            {"day": 3, "title": "Active recall", "tasks": ["Explain the topic without notes", "Test yourself with short questions", "Revisit only the gaps you missed"]},
+            {"day": 4, "title": "Exam-style practice", "tasks": ["Do a timed mini test", "Check mistakes before checking answers", "Create a last-minute revision list"]},
+            {"day": 5, "title": "Confidence check", "tasks": ["Recall the whole topic from memory", "Redo your hardest questions", "Choose what needs one more revision"]},
+            {"day": 6, "title": "Targeted revision", "tasks": ["Spend most time on your lowest-confidence topic", "Use short recall cycles", "Finish with a 5-minute brain dump"]},
+            {"day": 7, "title": "Ready, not exhausted", "tasks": ["Take a calm final self-test", "Review mistakes only", "Stop early and protect your sleep"]},
+        ][:max(1, min(days, 7))]
     }
 
 
@@ -31,34 +36,39 @@ def health():
 @app.post("/api/plan")
 def create_plan():
     data = request.get_json(silent=True) or {}
-    topic = (data.get("topic") or "My syllabus").strip()[:500]
-    days = int(data.get("days") or 5)
+    topic = (data.get("topic") or "My syllabus").strip()[:1200]
+    days = max(1, min(int(data.get("days") or 5), 30))
+    minutes = max(15, min(int(data.get("minutes") or 90), 480))
+    confidence = (data.get("confidence") or "Not sure").strip()[:50]
+    exam_date = (data.get("exam_date") or "Not set").strip()[:30]
 
-    # Safe first version: works even before an API key is configured.
-    # The real AI integration will be enabled server-side with OPENAI_API_KEY.
     if not os.getenv("OPENAI_API_KEY"):
-        return jsonify(demo_plan(topic, days))
+        return jsonify(demo_plan(topic, days, minutes, confidence))
 
     try:
         from openai import OpenAI
         client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
         model = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
-        response = client.responses.create(
-            model=model,
-            input=(
-                "You are a student study planner. Create a practical, concise study plan. "
-                f"Topic/syllabus: {topic}\nDays: {days}\n"
-                "Return JSON with keys title, mode, items. items must be an array of objects "
-                "with day, title, and tasks (array of strings)."
-            ),
-        )
-        text = response.output_text
-        import json
-        result = json.loads(text)
+        prompt = f"""You are DHANU STUDY OS, a practical AI study coach for school students.
+Do not make the student feel guilty or overloaded. Build a realistic plan around their actual time.
+Prioritise active recall, practice, mistakes and spaced revision instead of passive rereading.
+
+Student mission: {topic}
+Days available: {days}
+Minutes available per day: {minutes}
+Self-rated confidence: {confidence}
+Exam date: {exam_date}
+
+Return ONLY valid JSON with keys: title, mode, coach, items.
+items must contain objects with day, title, tasks (array of 2-4 concise strings).
+Make the plan specific to the student's mission and time. Include a final review/checkpoint.
+"""
+        response = client.responses.create(model=model, input=prompt)
+        result = json.loads(response.output_text)
         result["mode"] = "AI mode"
         return jsonify(result)
-    except Exception as exc:
-        return jsonify({"error": "AI request failed", "detail": str(exc), **demo_plan(topic, days)}), 200
+    except Exception:
+        return jsonify(demo_plan(topic, days, minutes, confidence))
 
 
 if __name__ == "__main__":
