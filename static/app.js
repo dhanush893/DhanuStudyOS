@@ -1,75 +1,43 @@
 const studentStyle=document.createElement('link');studentStyle.rel='stylesheet';studentStyle.href='/static/student.css';document.head.appendChild(studentStyle);
 
-const topic = document.getElementById('topic');
-const days = document.getElementById('days');
-const minutes = document.getElementById('minutes');
-const confidence = document.getElementById('confidence');
-const examDate = document.getElementById('exam-date');
-const button = document.getElementById('generate');
-const result = document.getElementById('result');
-const menu = document.getElementById('menu');
-const sidebar = document.getElementById('sidebar');
-const views = ['dashboard','planner','subjects','revision','quiz','progress'];
-
-const state = JSON.parse(localStorage.getItem('dhanuStudyState') || '{"focus":0,"done":0,"streak":0,"confidence":"—"}');
-let timer = null;
-let secondsLeft = 0;
-
-function save(){ localStorage.setItem('dhanuStudyState', JSON.stringify(state)); updateStats(); }
-function updateStats(){
-  const set=(id,v)=>{const e=document.getElementById(id);if(e)e.innerHTML=v};
-  set('focus-stat', `${state.focus}<span> min</span>`); set('done-stat', `${state.done}<span> tasks</span>`); set('streak-stat', `${state.streak}<span> days</span>`); set('confidence-stat', `${state.confidence}<span>/10</span>`);
-  set('progress-focus', `${state.focus}m`); set('progress-done', state.done); set('progress-streak', state.streak);
-}
+const topic=document.getElementById('topic'),days=document.getElementById('days'),minutes=document.getElementById('minutes'),confidence=document.getElementById('confidence'),examDate=document.getElementById('exam-date'),button=document.getElementById('generate'),result=document.getElementById('result'),menu=document.getElementById('menu'),sidebar=document.getElementById('sidebar');
+const views=['dashboard','planner','subjects','revision','quiz','progress'];
+const state=JSON.parse(localStorage.getItem('dhanuStudyState')||'{"focus":0,"done":0,"streak":0,"confidence":"—","deadlines":[],"materials":[],"weakTopics":[],"sessions":[]}');
+state.deadlines=state.deadlines||[];state.materials=state.materials||[];state.weakTopics=state.weakTopics||[];state.sessions=state.sessions||[];
+let timer=null,secondsLeft=0,currentSession=0;
+function save(){localStorage.setItem('dhanuStudyState',JSON.stringify(state));updateStats();renderStudentLayer();}
+function updateStats(){const set=(id,v)=>{const e=document.getElementById(id);if(e)e.innerHTML=v};set('focus-stat',`${state.focus}<span> min</span>`);set('done-stat',`${state.done}<span> tasks</span>`);set('streak-stat',`${state.streak}<span> days</span>`);set('confidence-stat',`${state.confidence}<span>/10</span>`);set('progress-focus',`${state.focus}m`);set('progress-done',state.done);set('progress-streak',state.streak)}
 updateStats();
+function showView(name){views.forEach(v=>document.getElementById(`${v}-view`)?.classList.toggle('hidden-view',v!==name));document.querySelectorAll('.nav-item').forEach(b=>b.classList.toggle('active',b.dataset.view===name));const crumb=document.querySelector('.crumb');if(crumb)crumb.innerHTML=`My study space <span>/</span> <b>${name==='dashboard'?'Today':name==='planner'?'Plan my week':name.charAt(0).toUpperCase()+name.slice(1)}</b>`;sidebar?.classList.remove('open');window.scrollTo({top:0,behavior:'smooth'});if(name==='progress')renderWeekly();if(name==='quiz')renderQuizHome()}
+document.querySelectorAll('.nav-item').forEach(b=>b.addEventListener('click',()=>showView(b.dataset.view)));document.querySelectorAll('[data-view-target]').forEach(b=>b.addEventListener('click',()=>showView(b.dataset.viewTarget)));document.getElementById('hero-plan')?.addEventListener('click',()=>showView('planner'));document.getElementById('open-planner')?.addEventListener('click',()=>showView('planner'));menu?.addEventListener('click',()=>sidebar?.classList.toggle('open'));
+document.querySelectorAll('.problem-card').forEach(card=>card.addEventListener('click',()=>{const a=card.dataset.action;if(a==='planner')showView('planner');if(a==='revision')showView('revision');if(a==='quiz')showView('quiz');if(a==='focus')startFocus()}));
+document.getElementById('next-action')?.addEventListener('click',()=>startFocus());document.getElementById('ask-coach')?.addEventListener('click',()=>showView('planner'));document.getElementById('revision-start')?.addEventListener('click',()=>showView('revision'));document.getElementById('quiz-start')?.addEventListener('click',()=>showView('quiz'));document.getElementById('focus-button')?.addEventListener('click',startFocus);
 
-function showView(name){
-  views.forEach(view=>document.getElementById(`${view}-view`)?.classList.toggle('hidden-view',view!==name));
-  document.querySelectorAll('.nav-item').forEach(b=>b.classList.toggle('active',b.dataset.view===name));
-  const crumb=document.querySelector('.crumb'); if(crumb) crumb.innerHTML=`My study space <span>/</span> <b>${name==='dashboard'?'Today':name==='planner'?'Plan my week':name.charAt(0).toUpperCase()+name.slice(1)}</b>`;
-  sidebar?.classList.remove('open'); window.scrollTo({top:0,behavior:'smooth'});
+function renderStudentLayer(){
+ const dash=document.getElementById('dashboard-view');if(!dash)return;
+ let layer=document.getElementById('student-command-layer');if(!layer){layer=document.createElement('div');layer.id='student-command-layer';const anchor=dash.querySelector('.stats-grid');anchor?.insertAdjacentElement('afterend',layer)}
+ const due=state.deadlines.slice().sort((a,b)=>String(a.date).localeCompare(String(b.date)));const nearest=due[0];const mins=Number(localStorage.getItem('dhanuSessionMinutes')||25);
+ layer.innerHTML=`<div class="student-command"><section class="panel command-card next-action"><div class="section-kicker">YOUR NEXT 15 MINUTES</div><div class="next-time"><span id="next-minutes">${mins}</span> <span>MIN</span></div><h3 id="next-title">${escapeHtml(nearest?`${nearest.subject}: ${nearest.topic}`:(state.weakTopics[0]||'Tell me what you need to study'))}</h3><p id="next-why">${nearest?`Nearest deadline: ${escapeHtml(nearest.date)}. I’ll start with this.`:'Add a deadline or upload your material and I’ll choose the next move.'}</p><div class="session-controls"><input id="session-minutes" class="session-minutes" type="number" min="10" max="240" value="${mins}"><button class="primary-btn" id="session-start">▶ Start this session</button><button class="ghost-btn" id="session-pause">Pause</button></div><div class="session-progress"><i id="session-bar"></i></div></section><section class="panel command-card"><div class="section-kicker">REAL STUDY INPUTS</div><div class="command-title">Your deadlines</div><p class="command-copy">Give the coach every exam, assignment or project. It will prioritise the nearest risk.</p><div class="deadline-list">${due.slice(0,3).map((d,i)=>`<div class="deadline-row"><span>📌</span><div><b>${escapeHtml(d.subject||'Deadline')} · ${escapeHtml(d.topic||'Study')}</b><small>${escapeHtml(d.date)} · ${i===0?'NEXT UP':'queued'}</small></div></div>`).join('')||'<small class="muted">No deadlines yet — add your first one below.</small>'}</div><div class="command-actions"><input id="deadline-subject" class="quick-input" placeholder="Subject"><input id="deadline-topic" class="quick-input" placeholder="Exam / assignment"><input id="deadline-date" class="quick-input" type="date"><button class="primary-btn" id="add-deadline">+ Add</button></div></section></div><div class="student-command"><section class="panel command-card"><div class="section-kicker">STUDY MATERIALS</div><div class="command-title">Stop studying from empty cards.</div><p class="command-copy">Upload PDFs, notes or text files. The app stores the material locally in this browser and uses its text to generate practice.</p><label class="material-upload">＋ Add notes / textbook / PDF<input id="material-files" type="file" multiple accept=".pdf,.txt,.md,.doc,.docx"></label><div class="material-list">${state.materials.slice(-4).reverse().map(m=>`<div class="material-row"><span>📚</span><div><b>${escapeHtml(m.name)}</b><small>${Math.round((m.size||0)/1024)} KB · available for practice</small></div></div>`).join('')||'<small class="muted">No material added yet.</small>'}</div></section><section class="panel command-card"><div class="section-kicker">PACE CHECK</div><div class="command-title">No more fake confidence.</div><p class="command-copy">Confidence is now earned through practice scores. Take a 5-question check and weak topics automatically return to your queue.</p><div class="command-actions"><button class="primary-btn" id="quick-quiz">Test me on my weak spot →</button></div></section></div>`;
+ bindStudentControls();
 }
-document.querySelectorAll('.nav-item').forEach(b=>b.addEventListener('click',()=>showView(b.dataset.view)));
-document.querySelectorAll('[data-view-target]').forEach(b=>b.addEventListener('click',()=>showView(b.dataset.viewTarget)));
-document.getElementById('hero-plan')?.addEventListener('click',()=>showView('planner'));
-document.getElementById('open-planner')?.addEventListener('click',()=>showView('planner'));
-menu?.addEventListener('click',()=>sidebar?.classList.toggle('open'));
-
-document.querySelectorAll('.problem-card').forEach(card=>card.addEventListener('click',()=>{
-  const action=card.dataset.action;
-  if(action==='planner') showView('planner');
-  if(action==='revision') showView('revision');
-  if(action==='quiz') showView('quiz');
-  if(action==='focus') startFocus();
-}));
-document.getElementById('next-action')?.addEventListener('click',()=>showView('planner'));
-document.getElementById('ask-coach')?.addEventListener('click',()=>showView('planner'));
-document.getElementById('revision-start')?.addEventListener('click',()=>alert('10-minute recall: close your notes, write what you remember, then check the gaps. Your next version will save recall results automatically.'));
-document.getElementById('quiz-start')?.addEventListener('click',()=>showView('planner'));
-document.getElementById('focus-button')?.addEventListener('click',startFocus);
-
-function startFocus(){
-  const btn=document.getElementById('focus-button');
-  if(timer){ clearInterval(timer); timer=null; btn.textContent='▶'; return; }
-  secondsLeft=25*60; btn.textContent='25:00';
-  timer=setInterval(()=>{ secondsLeft--; const m=String(Math.floor(secondsLeft/60)).padStart(2,'0'); const s=String(secondsLeft%60).padStart(2,'0'); btn.textContent=`${m}:${s}`; if(secondsLeft<=0){clearInterval(timer);timer=null;state.focus+=25;state.done+=1;state.streak=Math.max(1,state.streak);save();btn.textContent='✓'; alert('Nice. One focused block finished. Take a short break, then decide what is next.');}},1000);
+function bindStudentControls(){
+ document.getElementById('add-deadline')?.addEventListener('click',()=>{const s=document.getElementById('deadline-subject').value.trim(),t=document.getElementById('deadline-topic').value.trim(),d=document.getElementById('deadline-date').value;if(!s||!t||!d)return;state.deadlines.push({subject:s,topic:t,date:d});save()});
+ document.getElementById('material-files')?.addEventListener('change',e=>{Array.from(e.target.files||[]).forEach(f=>state.materials.push({name:f.name,size:f.size,type:f.type}));save()});
+ document.getElementById('session-minutes')?.addEventListener('change',e=>{localStorage.setItem('dhanuSessionMinutes',Math.max(10,Math.min(240,Number(e.target.value)||25)));renderStudentLayer()});
+ document.getElementById('session-start')?.addEventListener('click',startFocus);document.getElementById('session-pause')?.addEventListener('click',pauseFocus);document.getElementById('quick-quiz')?.addEventListener('click',()=>showView('quiz'));
 }
+function startFocus(){const input=document.getElementById('session-minutes');if(!timer){currentSession=Math.max(10,Math.min(240,Number(input?.value)||Number(localStorage.getItem('dhanuSessionMinutes'))||25));secondsLeft=currentSession*60;timer=setInterval(()=>{secondsLeft--;const total=currentSession*60,elapsed=total-secondsLeft;const bar=document.getElementById('session-bar');if(bar)bar.style.width=`${Math.min(100,elapsed/total*100)}%`;const btn=document.getElementById('session-start');if(btn)btn.textContent=`${String(Math.floor(secondsLeft/60)).padStart(2,'0')}:${String(secondsLeft%60).padStart(2,'0')}`;if(secondsLeft<=0)finishFocus()},1000)}else pauseFocus()}
+function pauseFocus(){if(timer){clearInterval(timer);timer=null;const b=document.getElementById('session-start');if(b)b.textContent='▶ Resume session'}}
+function finishFocus(){if(timer)clearInterval(timer);timer=null;state.focus+=currentSession;state.done+=1;state.streak=Math.max(1,state.streak);state.sessions.push({date:new Date().toISOString().slice(0,10),minutes:currentSession});save();renderStudentLayer();alert(`Session complete. ${currentSession} minutes counted. Now do 5 quick recall questions.`)}
 
-button?.addEventListener('click',async()=>{
-  const value=topic.value.trim(); if(!value){topic.focus();topic.placeholder='Paste your syllabus, chapters, homework or exam topics first…';return;}
-  button.disabled=true; button.innerHTML='✦ Thinking about what matters most…'; result.classList.remove('hidden');
-  result.innerHTML='<div class="mode">AI STUDY COACH · ANALYZING</div><h2>Building a plan around your actual time…</h2><p style="color:#777d94;font-size:13px">Prioritising topics, reducing overload and adding recall + practice.</p>';
-  try{
-    const response=await fetch('/api/plan',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({topic:value,days:Number(days.value),minutes:Number(minutes.value),confidence:confidence.value,exam_date:examDate.value})});
-    const data=await response.json(); if(!response.ok) throw new Error(data.error||'Request failed'); renderPlan(data); result.scrollIntoView({behavior:'smooth',block:'start'});
-  }catch(error){result.innerHTML='<h2>We hit a small problem.</h2><p style="color:#858ba5">Your study idea is saved on this screen. Try again in a moment.</p>';}
-  finally{button.disabled=false;button.innerHTML='✦ Build my realistic plan <span>→</span>';}
-});
+button?.addEventListener('click',async()=>{const value=topic.value.trim();if(!value){topic.focus();topic.placeholder='Paste your syllabus, chapters, homework or exam topics first…';return}button.disabled=true;button.innerHTML='✦ Thinking about what matters most…';result.classList.remove('hidden');result.innerHTML='<div class="mode">AI STUDY COACH · ANALYZING</div><h2>Building a plan around your actual time…</h2><p style="color:#777d94;font-size:13px">Prioritising deadlines, recall, practice and revision.</p>';try{const response=await fetch('/api/plan',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({topic:value,days:Number(days.value),minutes:Number(minutes.value),confidence:confidence.value,exam_date:examDate.value})});const data=await response.json();if(!response.ok)throw new Error(data.error||'Request failed');renderPlan(data);result.scrollIntoView({behavior:'smooth',block:'start'})}catch(e){result.innerHTML='<h2>We hit a small problem.</h2><p style="color:#858ba5">Try again in a moment. Your existing study data is safe.</p>'}finally{button.disabled=false;button.innerHTML='✦ Build my realistic plan <span>→</span>'}});
+function renderPlan(data){const items=Array.isArray(data.items)?data.items:[];result.innerHTML=`<div class="mode">${escapeHtml(data.mode||'AI STUDY COACH')}</div><h2>${escapeHtml(data.title||'Your realistic study plan')}</h2><p class="coach-note">✦ ${escapeHtml(data.coach||'Built around progress, not pressure.')}</p>`+items.map(item=>`<div class="day"><div class="day-top"><h3>Day ${escapeHtml(item.day)} · ${escapeHtml(item.title)}</h3><button class="task-done" type="button">Done</button></div><ul>${(item.tasks||[]).map(t=>`<li>${escapeHtml(t)}</li>`).join('')}</ul></div>`).join('');result.querySelectorAll('.task-done').forEach(b=>b.addEventListener('click',()=>{b.textContent='✓ Done';b.classList.add('done');state.done++;save()}))}
 
-function renderPlan(data){
-  const items=Array.isArray(data.items)?data.items:[];
-  result.innerHTML=`<div class="mode">${escapeHtml(data.mode||'AI STUDY COACH')}</div><h2>${escapeHtml(data.title||'Your realistic study plan')}</h2><p class="coach-note">✦ ${escapeHtml(data.coach||'Your plan is designed around progress, not pressure.')}</p>`+
-  items.map(item=>`<div class="day"><div class="day-top"><h3>Day ${escapeHtml(item.day)} · ${escapeHtml(item.title)}</h3><button class="task-done" type="button">Done</button></div><ul>${(item.tasks||[]).map(t=>`<li>${escapeHtml(t)}</li>`).join('')}</ul></div>`).join('');
-  result.querySelectorAll('.task-done').forEach(btn=>btn.addEventListener('click',()=>{btn.textContent='✓ Done';btn.classList.add('done');state.done++;save();}));
-}
-function escapeHtml(value){return String(value).replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));}
+async function renderQuizHome(){const view=document.getElementById('quiz-view');if(!view)return;let box=document.getElementById('quiz-runtime');if(!box){box=document.createElement('div');box.id='quiz-runtime';box.className='panel';view.appendChild(box)}const suggested=state.weakTopics[0]||state.deadlines[0]?.topic||'your current topic';box.innerHTML=`<div class="section-kicker">PRACTICE LAB</div><h2>5 questions. No self-rating.</h2><p class="command-copy">I’ll score you, show the gaps and push weak topics back into your study queue.</p><div class="command-actions"><input id="quiz-topic" class="quick-input" value="${escapeHtml(suggested)}"><button class="primary-btn" id="quiz-generate">Generate 5 questions →</button></div><div id="quiz-box"></div>`;document.getElementById('quiz-generate').addEventListener('click',generateQuiz)}
+async function generateQuiz(){const qt=document.getElementById('quiz-topic'),qb=document.getElementById('quiz-box');const name=qt.value.trim()||'my topic';qb.innerHTML='<p class="muted">Generating a real practice set…</p>';let material=state.materials.map(m=>m.name).join(', ');try{const r=await fetch('/api/quiz',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({topic:name,material})});const data=await r.json();const qs=data.questions||[];qb.innerHTML=`<div class="mode">${escapeHtml(data.mode||'PRACTICE')}</div><h3>${escapeHtml(data.title||'Quick check')}</h3>`+qs.map((q,i)=>`<div class="quiz-q"><b>${i+1}. ${escapeHtml(q.q)}</b>${q.options.map((o,j)=>`<label><input type="radio" name="q${i}" value="${j}"> ${escapeHtml(o)}</label>`).join('')}</div>`).join('')+`<button class="primary-btn" id="score-quiz">Score my answers</button><div id="quiz-score"></div>`;document.getElementById('score-quiz').addEventListener('click',()=>scoreQuiz(qs,name))}catch(e){qb.innerHTML='<p class="muted">Could not generate questions. Try again.</p>'}}
+function scoreQuiz(qs,name){let correct=0;qs.forEach((q,i)=>{const selected=document.querySelector(`input[name="q${i}"]:checked`);if(selected&&Number(selected.value)===Number(q.answer))correct++});const pct=qs.length?Math.round(correct/qs.length*100):0;const score=Math.round(pct/10);state.confidence=score;if(pct<70&&!state.weakTopics.includes(name))state.weakTopics.unshift(name);if(pct>=80)state.weakTopics=state.weakTopics.filter(x=>x!==name);save();const el=document.getElementById('quiz-score');el.className='score-result';el.innerHTML=`<b>${pct}% — confidence ${score}/10</b><br>${pct<70?`Keep ${escapeHtml(name)} in your next-session queue. We’ll attack the gaps before moving on.`:pct<90?'Good progress. One more short recall round will make this stick.':'Strong result. Move this topic to maintenance revision.'}`}
+
+function renderWeekly(){const view=document.getElementById('progress-view');if(!view)return;let box=document.getElementById('weekly-runtime');if(!box){box=document.createElement('div');box.id='weekly-runtime';box.className='panel';view.appendChild(box)}const today=new Date();const start=new Date(today);start.setDate(today.getDate()-today.getDay());const sessions=new Set(state.sessions.map(s=>s.date));const deadlineMap={};state.deadlines.forEach(d=>(deadlineMap[d.date]??=[]).push(d.topic));let cells='';for(let i=0;i<7;i++){const d=new Date(start);d.setDate(start.getDate()+i);const key=d.toISOString().slice(0,10);cells+=`<div class="calendar-day"><strong>${d.toLocaleDateString(undefined,{weekday:'short'})}</strong><small>${d.getDate()}/${d.getMonth()+1}</small>${sessions.has(key)?'<small class="ontrack">● study done</small>':'<small class="calendar-empty">○ no session</small>'}${(deadlineMap[key]||[]).map(t=>`<small><span class="calendar-dot"></span>${escapeHtml(t)}</small>`).join('')}</div>`}box.innerHTML=`<div class="section-kicker">PACE & TIMELINE</div><h2>Am I actually on pace?</h2><p class="command-copy">Your week at a glance. Completed sessions are marked; upcoming deadlines are placed on the same timeline.</p><div class="calendar-grid">${cells}</div><div class="score-result">Target: ${Math.max(0,state.deadlines.length?state.deadlines.length*50:150)} minutes this week · Actual: ${state.focus} minutes · ${state.focus>=150?'You’re on track.':'You’re behind the suggested pace — start a small session now rather than waiting for a perfect hour.'}</div>`}
+
+renderStudentLayer();
+function escapeHtml(v){return String(v).replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]))}
