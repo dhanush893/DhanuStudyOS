@@ -1,3 +1,5 @@
+const studentStyle=document.createElement('link');studentStyle.rel='stylesheet';studentStyle.href='/static/student.css';document.head.appendChild(studentStyle);
+
 const topic = document.getElementById('topic');
 const days = document.getElementById('days');
 const minutes = document.getElementById('minutes');
