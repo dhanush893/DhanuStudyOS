@@ -3,37 +3,65 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>DHANU STUDY OS</title>
+  <meta name="theme-color" content="#070914">
+  <title>DHANU STUDY OS — AI Study Intelligence</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
-  <main class="shell">
-    <header class="hero">
-      <div class="badge">DHANU STUDY OS</div>
-      <h1>Study smarter.<br><span>One workspace.</span></h1>
-      <p>Turn your syllabus into a clear, practical study plan with AI-powered support.</p>
-    </header>
-
-    <section class="card planner">
-      <div class="section-title"><span>01</span><div><h2>Build your plan</h2><p>Tell us what you need to learn.</p></div></div>
-      <label for="topic">Syllabus or topic</label>
-      <textarea id="topic" placeholder="Example: 2nd PUC Economics — Microeconomics, chapters 1–4"></textarea>
-      <div class="row">
-        <div class="field"><label for="days">Study days</label><select id="days"><option>3</option><option selected>5</option><option>7</option></select></div>
-        <button id="generate">Generate plan <span>→</span></button>
+  <div class="ambient ambient-one"></div><div class="ambient ambient-two"></div>
+  <div class="app-shell">
+    <aside class="sidebar" id="sidebar">
+      <div class="brand"><div class="brand-mark">D</div><div><strong>DHANU</strong><span>STUDY OS</span></div></div>
+      <div class="side-label">WORKSPACE</div>
+      <nav>
+        <button class="nav-item active" data-view="dashboard"><span>⌂</span> Dashboard</button>
+        <button class="nav-item" data-view="planner"><span>✦</span> AI Planner</button>
+        <button class="nav-item" data-view="subjects"><span>◈</span> Subjects</button>
+        <button class="nav-item" data-view="revision"><span>↻</span> Revision</button>
+        <button class="nav-item" data-view="quiz"><span>◇</span> Practice Lab</button>
+        <button class="nav-item" data-view="progress"><span>◒</span> Progress</button>
+      </nav>
+      <div class="side-bottom">
+        <div class="coach-card"><span class="pulse-dot"></span><div><b>AI Coach</b><small>Ready to help you learn</small></div></div>
+        <div class="student-mini"><div class="avatar">D</div><div><b>Student</b><small>Focus mode</small></div><span>•••</span></div>
       </div>
-    </section>
+    </aside>
 
-    <section id="result" class="card result hidden"></section>
+    <main class="main">
+      <header class="topbar"><button class="mobile-menu" id="menu">☰</button><div class="crumb">Workspace <span>/</span> <b>Dashboard</b></div><div class="top-actions"><button class="icon-btn">⌕</button><button class="icon-btn">◔</button><button class="avatar top-avatar">D</button></div></header>
 
-    <section class="features">
-      <div><strong>AI Plans</strong><span>Personalized study flow</span></div>
-      <div><strong>Quick Revision</strong><span>Recall what matters</span></div>
-      <div><strong>Practice</strong><span>Questions and quizzes</span></div>
-    </section>
+      <section class="page" id="dashboard-view">
+        <div class="welcome-row"><div><div class="eyebrow"><span class="spark">✦</span> PERSONAL LEARNING INTELLIGENCE</div><h1>Good morning, <span>Student.</span></h1><p>Your study system is ready. Turn your syllabus into momentum.</p></div><button class="primary-btn" id="hero-plan">✦ Generate my plan <span>→</span></button></div>
 
-    <footer>Built for students · CSC Back-to-School Hackathon 2026</footer>
-  </main>
+        <div class="stats-grid">
+          <article class="stat-card featured"><div class="stat-icon">◷</div><div class="stat-top"><span>THIS WEEK</span><i>+12%</i></div><strong>24.5<span>h</span></strong><small>Study time</small><div class="mini-bars"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div></article>
+          <article class="stat-card"><div class="stat-icon">🔥</div><div class="stat-top"><span>STREAK</span></div><strong>7<span> days</span></strong><small>Personal best · 12 days</small><div class="streak-line"><b></b><b></b><b></b><b></b><b></b><b></b><b class="today"></b></div></article>
+          <article class="stat-card"><div class="stat-icon">◈</div><div class="stat-top"><span>PROGRESS</span></div><strong>78<span>%</span></strong><small>Weekly learning goal</small><div class="progress-track"><i style="width:78%"></i></div></article>
+          <article class="stat-card"><div class="stat-icon">✧</div><div class="stat-top"><span>AI INSIGHT</span></div><strong>8.4<span>/10</span></strong><small>Readiness score</small><div class="score-pill">↑ Improving</div></article>
+        </div>
+
+        <div class="dashboard-grid">
+          <section class="panel plan-preview"><div class="panel-head"><div><span class="section-kicker">INTELLIGENT SCHEDULE</span><h2>Today's focus</h2></div><button class="text-btn" id="open-planner">View planner →</button></div><div class="focus-card"><div class="focus-time">09:00 <span>AM</span></div><div class="focus-main"><span class="tag purple">DEEP WORK</span><h3>Microeconomics · Demand & Supply</h3><p>Understand elasticity, shifts and real-world applications.</p><div class="focus-meta"><span>◷ 60 min</span><span>◈ High priority</span></div></div><button class="play-btn">▶</button></div><div class="next-item"><span class="timeline-dot"></span><div><small>NEXT · 02:00 PM</small><b>Physics · Current Electricity</b></div><span class="muted">45 min</span></div></section>
+          <section class="panel insight"><div class="panel-head"><div><span class="section-kicker">AI COACH</span><h2>One useful thought</h2></div><span class="live-badge"><i></i> LIVE</span></div><div class="insight-orb">✦</div><blockquote>“Don't study everything equally. Your next best move is to strengthen the topic where your confidence is lowest.”</blockquote><div class="insight-foot"><span>Based on your recent activity</span><button class="ghost-btn">Ask AI →</button></div></section>
+        </div>
+
+        <div class="lower-grid"><section class="panel subjects-panel"><div class="panel-head"><div><span class="section-kicker">YOUR LEARNING MAP</span><h2>Subjects</h2></div><button class="text-btn">View all →</button></div><div class="subject-list"><div class="subject"><div class="subject-icon math">M</div><div><b>Mathematics</b><small>Calculus · Algebra</small></div><div class="subject-progress"><span>86%</span><i><b style="width:86%"></b></i></div></div><div class="subject"><div class="subject-icon phy">P</div><div><b>Physics</b><small>Electricity · Waves</small></div><div class="subject-progress"><span>72%</span><i><b style="width:72%"></b></i></div></div><div class="subject"><div class="subject-icon eco">E</div><div><b>Economics</b><small>Micro · Macro</small></div><div class="subject-progress"><span>64%</span><i><b style="width:64%"></b></i></div></div></div></section><section class="panel readiness"><div class="panel-head"><div><span class="section-kicker">EXAM READINESS</span><h2>Next milestone</h2></div><span class="date-pill">14 DAYS</span></div><div class="readiness-ring"><div><strong>82%</strong><span>ready</span></div></div><div class="readiness-copy"><b>Midterm checkpoint</b><span>You're on track. Keep your current rhythm.</span></div></section></div>
+      </section>
+
+      <section class="page tool-view hidden-view" id="planner-view"><div class="tool-header"><div><div class="eyebrow">✦ AI STUDY PLANNER</div><h1>Build a plan that <span>fits you.</span></h1><p>Give the AI your syllabus, topic or exam target. It will turn the mess into a practical sequence.</p></div><div class="ai-chip">● AI READY</div></div><section class="planner-panel panel"><div class="input-head"><div><span class="number">01</span><div><h2>Your learning mission</h2><p>What are you preparing for?</p></div></div><span class="privacy">⌁ Your input stays private</span></div><textarea id="topic" placeholder="Paste your syllabus, chapters, exam topics or assignment here…"></textarea><div class="planner-options"><label>PLAN LENGTH<select id="days"><option>3</option><option selected>5</option><option>7</option></select></label><label>INTENSITY<select id="intensity"><option>Balanced</option><option>Focused</option><option>Deep dive</option></select></label><button id="generate" class="primary-btn">Generate intelligent plan <span>→</span></button></div></section><section id="result" class="panel result hidden"></section></section>
+
+      <section class="page tool-view hidden-view" id="subjects-view"><div class="tool-header"><div><div class="eyebrow">◈ LEARNING MAP</div><h1>Know where you <span>stand.</span></h1><p>See your subjects, confidence and the next area worth your attention.</p></div></div><div class="subject-big-grid"><div class="subject-big"><span class="subject-icon math">M</span><h3>Mathematics</h3><b>86%</b><div class="progress-track"><i style="width:86%"></i></div><small>Strong · 4 topics remaining</small></div><div class="subject-big"><span class="subject-icon phy">P</span><h3>Physics</h3><b>72%</b><div class="progress-track"><i style="width:72%"></i></div><small>Growing · 6 topics remaining</small></div><div class="subject-big"><span class="subject-icon eco">E</span><h3>Economics</h3><b>64%</b><div class="progress-track"><i style="width:64%"></i></div><small>Needs attention · 5 topics remaining</small></div></div></section>
+
+      <section class="page tool-view hidden-view" id="revision-view"><div class="empty-feature panel"><div class="feature-orb">↻</div><div class="eyebrow">SMART REVISION</div><h1>Remember <span>what matters.</span></h1><p>Use AI-generated recall sessions and spaced revision to turn today's learning into long-term memory.</p><button class="primary-btn" id="revision-start">Start a revision session →</button></div></section>
+      <section class="page tool-view hidden-view" id="quiz-view"><div class="empty-feature panel"><div class="feature-orb">◇</div><div class="eyebrow">PRACTICE LAB</div><h1>Turn knowledge into <span>confidence.</span></h1><p>Generate practice questions from your study material and test yourself without the pressure.</p><button class="primary-btn" id="quiz-start">Create a practice set →</button></div></section>
+      <section class="page tool-view hidden-view" id="progress-view"><div class="empty-feature panel"><div class="feature-orb">◒</div><div class="eyebrow">LEARNING ANALYTICS</div><h1>Your progress, <span>made visible.</span></h1><p>Track consistency, study time and readiness so you know what to do next—not just what you finished.</p><div class="analytics-row"><div><b>78%</b><span>Weekly goal</span></div><div><b>24.5h</b><span>Study time</span></div><div><b>7</b><span>Day streak</span></div></div></div></section>
+
+      <footer><span>DHANU STUDY OS</span><span>Built for CSC Back-to-School Hackathon 2026</span><span>Think · Learn · Evolve</span></footer>
+    </main>
+  </div>
   <script src="/static/app.js"></script>
 </body>
 </html>
