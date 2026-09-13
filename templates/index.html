@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>DHANU STUDY OS</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <main class="shell">
+    <header class="hero">
+      <div class="badge">DHANU STUDY OS</div>
+      <h1>Study smarter.<br><span>One workspace.</span></h1>
+      <p>Turn your syllabus into a clear, practical study plan with AI-powered support.</p>
+    </header>
+
+    <section class="card planner">
+      <div class="section-title"><span>01</span><div><h2>Build your plan</h2><p>Tell us what you need to learn.</p></div></div>
+      <label for="topic">Syllabus or topic</label>
+      <textarea id="topic" placeholder="Example: 2nd PUC Economics — Microeconomics, chapters 1–4"></textarea>
+      <div class="row">
+        <div class="field"><label for="days">Study days</label><select id="days"><option>3</option><option selected>5</option><option>7</option></select></div>
+        <button id="generate">Generate plan <span>→</span></button>
+      </div>
+    </section>
+
+    <section id="result" class="card result hidden"></section>
+
+    <section class="features">
+      <div><strong>AI Plans</strong><span>Personalized study flow</span></div>
+      <div><strong>Quick Revision</strong><span>Recall what matters</span></div>
+      <div><strong>Practice</strong><span>Questions and quizzes</span></div>
+    </section>
+
+    <footer>Built for students · CSC Back-to-School Hackathon 2026</footer>
+  </main>
+  <script src="/static/app.js"></script>
+</body>
+</html>
