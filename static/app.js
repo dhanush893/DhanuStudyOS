@@ -1,6 +1,6 @@
 const studentStyle = document.createElement('link');
 studentStyle.rel = 'stylesheet';
-studentStyle.href = '/static/student.css';
+studentStyle.href = '/static/student.css?v=20260920';
 document.head.appendChild(studentStyle);
 
 const $ = (id) => document.getElementById(id);
