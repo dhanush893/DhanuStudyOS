@@ -76,3 +76,19 @@ body{padding-bottom:92px;background:radial-gradient(90% 45% at 80% 0,rgba(133,10
 .coach-status{margin-top:9px;font-size:10px;color:#8f96ae}
 .coach-form.is-thinking{opacity:.72}
 @media(max-width:700px){.coach-form .primary-btn{padding:0 13px}.coach-chat{max-height:280px}}
+
+/* Dashboard polish: readable glass cards and AI-first layout */
+.dashboard-mentor{margin-bottom:12px!important}
+.dashboard-mentor .panel-head h2{font-size:22px}
+.student-problem-grid{margin-top:12px}
+.problem-card b,.problem-card small{color:rgba(244,246,255,.92)!important}
+.problem-card small{color:rgba(206,211,235,.72)!important}
+.problem-card span{filter:drop-shadow(0 3px 8px rgba(0,0,0,.25))}
+.problem-card{background:linear-gradient(145deg,rgba(255,255,255,.10),rgba(99,105,220,.055),rgba(35,190,220,.035))!important}
+.dashboard-mentor .coach-form .primary-btn{min-height:46px}
+@media(max-width:700px){
+ .dashboard-mentor{padding:16px!important;margin-bottom:10px!important}
+ .dashboard-mentor .panel-head h2{font-size:18px}
+ .dashboard-mentor .coach-form{position:sticky;bottom:84px;z-index:5}
+ .student-problem-grid{margin-top:10px!important}
+}
