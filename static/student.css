@@ -58,3 +58,21 @@ body{padding-bottom:92px;background:radial-gradient(90% 45% at 80% 0,rgba(133,10
 }
 @media(max-width:420px){.welcome-row h1,.tool-header h1{font-size:35px!important}.student-problem-grid{grid-template-columns:1fr!important}.problem-card{min-height:auto!important}.planner-options{grid-template-columns:1fr!important}.sidebar{left:9px!important;right:9px!important;bottom:8px!important}.nav-item{font-size:7px!important}}
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{scroll-behavior:auto!important;transition:none!important;animation:none!important}}
+
+/* Conversational coach */
+.mentor-panel{min-height:100%}
+.coach-chat{max-height:330px;overflow:auto;padding:6px 2px 14px;display:flex;flex-direction:column;gap:12px}
+.coach-message{display:flex;gap:10px;align-items:flex-start}
+.coach-message-ai>div:last-child{flex:1;background:rgba(255,255,255,.055);border:1px solid rgba(255,255,255,.1);border-radius:16px 18px 18px 5px;padding:11px 13px}
+.coach-message-ai b{font-size:10px;letter-spacing:.12em;color:#bdb4ff}
+.coach-message-ai p,.coach-message-student p{margin:5px 0 0;font-size:12px;line-height:1.55;color:rgba(241,242,255,.86)}
+.coach-avatar{width:32px;height:32px;flex:none;display:grid;place-items:center;border-radius:12px;background:linear-gradient(145deg,rgba(255,255,255,.28),rgba(139,120,255,.2));border:1px solid rgba(255,255,255,.2);box-shadow:inset 0 1px rgba(255,255,255,.3)}
+.coach-message-student{align-self:flex-end;max-width:82%;background:linear-gradient(145deg,rgba(176,159,255,.22),rgba(83,211,255,.09));border:1px solid rgba(255,255,255,.14);border-radius:18px 18px 5px 18px;padding:10px 13px}
+.coach-message-student p{margin:0;color:#fff}
+.coach-form{display:flex;gap:8px;margin-top:4px}
+.coach-form input{min-width:0;flex:1;background:rgba(5,7,17,.38);border:1px solid rgba(255,255,255,.13);border-radius:15px;padding:12px 13px;color:#fff;outline:none;backdrop-filter:blur(18px)}
+.coach-form input:focus{border-color:rgba(190,179,255,.48);box-shadow:0 0 0 4px rgba(155,140,255,.07)}
+.coach-form .primary-btn{white-space:nowrap;padding:0 16px}
+.coach-status{margin-top:9px;font-size:10px;color:#8f96ae}
+.coach-form.is-thinking{opacity:.72}
+@media(max-width:700px){.coach-form .primary-btn{padding:0 13px}.coach-chat{max-height:280px}}
