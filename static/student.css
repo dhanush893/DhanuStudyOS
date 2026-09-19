@@ -58,3 +58,26 @@ body{padding-bottom:92px;background:radial-gradient(90% 45% at 80% 0,rgba(133,10
 }
 @media(max-width:420px){.welcome-row h1,.tool-header h1{font-size:35px!important}.student-problem-grid{grid-template-columns:1fr!important}.problem-card{min-height:auto!important}.planner-options{grid-template-columns:1fr!important}.sidebar{left:9px!important;right:9px!important;bottom:8px!important}.nav-item{font-size:7px!important}}
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{scroll-behavior:auto!important;transition:none!important;animation:none!important}}
+
+
+/* Conversational AI mentor */
+.mentor-panel{min-height:360px}
+.mentor-chat{height:210px;overflow:auto;padding:8px 2px 12px;display:flex;flex-direction:column;gap:12px;scroll-behavior:smooth}
+.mentor-row{display:flex;align-items:flex-end;gap:9px;max-width:92%}
+.mentor-row-student{margin-left:auto;justify-content:flex-end}
+.mentor-avatar{width:30px;height:30px;flex:0 0 30px;border-radius:11px;display:grid;place-items:center;font-size:11px;font-weight:800;color:#fff;background:linear-gradient(145deg,rgba(255,255,255,.28),rgba(150,130,255,.22));border:1px solid rgba(255,255,255,.18);box-shadow:inset 0 1px rgba(255,255,255,.28),0 8px 20px rgba(70,60,160,.2)}
+.mentor-bubble{padding:11px 13px;border:1px solid rgba(255,255,255,.12);border-radius:16px 16px 16px 5px;background:rgba(255,255,255,.055);color:rgba(245,246,255,.9);font-size:12px;line-height:1.55;backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);box-shadow:inset 0 1px rgba(255,255,255,.09)}
+.mentor-row-student .mentor-bubble{border-radius:16px 16px 5px 16px;background:linear-gradient(135deg,rgba(175,155,255,.22),rgba(74,207,255,.12));border-color:rgba(190,180,255,.2)}
+.mentor-form{display:flex;gap:8px;margin-top:8px}
+.mentor-form .quick-input{flex:1;min-width:0;margin:0}
+.mentor-form .primary-btn{flex:0 0 auto;padding:0 18px}
+.mentor-form.is-thinking .primary-btn{opacity:.7;pointer-events:none}
+.mentor-status{margin-top:10px;color:rgba(205,209,235,.56);font-size:10px;line-height:1.5}
+.mentor-panel .live-badge{font-size:9px}
+@media(max-width:700px){
+  .mentor-panel{min-height:0}
+  .mentor-chat{height:235px}
+  .mentor-form{align-items:stretch}
+  .mentor-form .primary-btn{padding:0 15px}
+  .mentor-bubble{font-size:11px;padding:10px 12px}
+}
