@@ -174,4 +174,48 @@ function updateReadiness(){
 }
 function toast(message){let t=$('dhanu-toast');if(!t){t=document.createElement('div');t.id='dhanu-toast';document.body.appendChild(t)}t.textContent=message;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3000)}
 
+/* CONVERSATIONAL AI STUDY COACH */
+function coachContext(question){
+  return `You are DHANU STUDY OS, a calm and practical AI study coach.
+Student question: ${question}
+Subjects and topics: ${subjectTopicText()||'none added yet'}
+Weak topics: ${state.weakTopics.join(', ')||'none recorded'}
+Latest confidence: ${state.confidence}/10
+Focus time: ${state.focus} minutes
+Completed tasks: ${state.done}
+Answer directly and simply. If the student is stuck, explain in small steps and finish with one concrete action. Do not invent missing syllabus details.`;
+}
+function addCoachMessage(text, role){
+  const chat=$('coach-chat'); if(!chat)return;
+  const row=document.createElement('div'); row.className=`coach-message coach-message-${role}`;
+  row.innerHTML=role==='ai'
+    ? `<div class="coach-avatar">D</div><div><b>DHANU</b><p>${escapeHtml(text)}</p></div>`
+    : `<div class="coach-message-student"><p>${escapeHtml(text)}</p></div>`;
+  chat.appendChild(row); chat.scrollTop=chat.scrollHeight;
+}
+async function sendCoachMessage(question){
+  const input=$('coach-input'), form=$('coach-form'), status=$('coach-status'), error=$('coach-error');
+  if(!question||!form)return;
+  form.classList.add('is-thinking'); if(input)input.disabled=true; error?.classList.add('hidden');
+  addCoachMessage(question,'student');
+  if(status)status.textContent='Coach is thinking…';
+  try{
+    const r=await fetch('/api/coach',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({context:coachContext(question)})});
+    const data=await r.json(); if(!r.ok)throw new Error(data.message||'The AI coach is temporarily unavailable.');
+    addCoachMessage(data.message||'Tell me a little more about the topic.','ai');
+    if(status)status.textContent=data.mode==='AI mode'?'AI coach · using your study data':'Study coach · ready';
+  }catch(e){
+    if(error){error.innerHTML=`Couldn’t reach the coach. <button id="coach-retry" class="text-btn" type="button">Retry →</button>`;error.classList.remove('hidden');$('coach-retry')?.addEventListener('click',()=>sendCoachMessage(question));}
+    if(status)status.textContent='Coach connection needs a retry.';
+  }finally{
+    form.classList.remove('is-thinking'); if(input){input.disabled=false;input.focus();}
+  }
+}
+$('coach-form')?.addEventListener('submit',e=>{
+  e.preventDefault();
+  const input=$('coach-input'); const q=input?.value.trim();
+  if(!q)return;
+  input.value=''; sendCoachMessage(q);
+});
+
 setupSubjectCreation();updateStats();renderDashboardSubjects();renderSubjects();renderStudentLayer();updateReadiness();
